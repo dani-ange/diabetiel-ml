@@ -5,8 +5,8 @@ on:
       -main
 jobs:
   train-evaluate-deploy:
-  runs-on: ubuntu-latest
-  steps:
+    runs-on: ubuntu-latest
+    steps:
     - name: checkout repository
       uses: actions/checkout@v3
     - name: set up python
@@ -14,7 +14,7 @@ jobs:
       with:
         python-version: 3.10
     - name: install dependencies
-      runs: 
+      run: 
         pip install -r requirements.txt
     - name: train the model
       run: python train.py
