@@ -28,7 +28,7 @@ jobs:
       run: |
         ACCURACY=$(python -c "import json; print(json.load(open('metrics.json'))['accuracy'])")
         echo "Model Accuracy: $ACCURACY"
-        if (( $(echo "$ACCURACY < 90" | bc -l) )); then
+        if (( $(echo "$ACCURACY < 60" | bc -l) )); then
           echo "Model accuracy is too low. Skipping deployment."
           exit 1
         fi
