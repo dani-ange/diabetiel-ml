@@ -5,41 +5,41 @@ on:
       -main
 jobs:
   train-evaluate-deploy:
-  runs-on: ubuntu-latest
-  steps:
-    - name: checkout repository
-      uses: actions/checkout@v3
-    - name: set up python
-      uses: actions/setup-python@v3
-      with:
-        python-version: 3.10
-    - name: install dependencies
-      runs: 
-        pip install -r requirements.txt
-    - name: train the model
-      run: python train.py
-    - name: check-model accuracy
-      id: check-accuracy
-      run: |
-        ACCURACCY = $(python -c "import json; print(json.load(open('metrics.json'))['accuracy'])")
-        echo "Model Accuracy :$ACCURACY"
-        if (( $(echo $Accuracy: < 90" | bc -l))); then
-          echo "model accuracy is too low.skipping deployment"
-          exit 1
-        fi
-    - name: Deploy to hugging face
-      env:
-        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
-      run: |
-        hugging-cli login --token $HF_TOKEN
-        git clone https://huggingface.co/spaces/danielle2003/diabeties-ml
-        cd diabeties-ml
-        cp ../diabetes-model.jolib
-        git add .
-        git commit -m "Updated model"
-        git push
-
-
-
-
-    
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+      - name: set up python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.10
+      - name: install dependencies
+        run: 
+          pip install -r requirements.txt
+      - name: train the model
+        run: python train.py
+      - name: check-model accuracy
+        id: check-accuracy
+        run: |
+          ACCURACCY = $(python -c "import json; print(json.load(open('metrics.json'))['accuracy'])")
+          echo "Model Accuracy :$ACCURACY"
+          if (( $(echo $Accuracy: < 90" | bc -l))); then
+            echo "model accuracy is too low.skipping deployment"
+            exit 1
+          fi
+      - name: Deploy to hugging face
+        env:
+          HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
+        run: |
+          hugging-cli login --token $HF_TOKEN
+          git clone https://huggingface.co/spaces/danielle2003/diabeties-ml
+          cd diabeties-ml
+          cp ../diabetes-model.jolib
+          git add .
+          git commit -m "Updated model"
+          git push
+  
+  
+  
+  
+      
