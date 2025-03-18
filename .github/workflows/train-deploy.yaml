@@ -2,45 +2,45 @@ name: Train and Deploy Model
 on:
   pull_request:
     branches:
-      -master
+      - master
   workflow_dispatch:
+
 jobs:
   train-evaluate-deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: checkout repository
+    - name: Checkout repository
       uses: actions/checkout@v3
-    - name: set up python
+
+    - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: 3.8
-    - name: install dependencies
-      run: 
-        pip install -r requirements.txt
-    - name: train the model
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Train the model
       run: python train.py
-    - name: check-model accuracy
+
+    - name: Check model accuracy
       id: check-accuracy
       run: |
-        ACCURACCY = $(python -c "import json; print(json.load(open('metrics.json'))['accuracy'])")
-        echo "Model Accuracy :$ACCURACY"
-        if (( $(echo $Accuracy: < 90" | bc -l))); then
-          echo "model accuracy is too low.skipping deployment"
+        ACCURACY=$(python -c "import json; print(json.load(open('metrics.json'))['accuracy'])")
+        echo "Model Accuracy: $ACCURACY"
+        if (( $(echo "$ACCURACY < 90" | bc -l) )); then
+          echo "Model accuracy is too low. Skipping deployment."
           exit 1
         fi
-    - name: Deploy to hugging face
+
+    - name: Deploy to Hugging Face
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
       run: |
-        hugging-cli login --token $HF_TOKEN
-        git clone https://huggingface.co/spaces/danielle2003/diabeties-ml
-        cd diabeties-ml
-        cp ../diabetes-model.jolib
-        git add .
+        huggingface-cli login --token $HF_TOKEN
+        git clone https://huggingface.co/spaces/danielle2003/diabetes-ml
+        cd diabetes-ml
+        cp ../diabetes_model.joblib .
+        git add diabetes_model.joblib
         git commit -m "Updated model"
         git push
-
-
-
-
-    
