@@ -18,9 +18,7 @@ jobs:
         python-version: 3.8
 
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install --no-cache-dir -r requirements.txt
+      run: pip install -r requirements.txt
 
     - name: Train the model
       run: python train.py
@@ -28,31 +26,37 @@ jobs:
     - name: Check model accuracy
       id: check-accuracy
       run: |
-        if [ ! -f metrics.json ]; then
-          echo "metrics.json not found. Exiting..."
-          exit 1
-        fi
         ACCURACY=$(python -c "import json; print(json.load(open('metrics.json'))['accuracy'])")
         echo "Model Accuracy: $ACCURACY"
-        python -c "import sys; sys.exit(0 if float('$ACCURACY') >= 60 else 1)"
+        if (( $(echo "$ACCURACY >= 60" | bc -l) )); then
+          echo "deploy=true" >> $GITHUB_OUTPUT
+        else
+          echo "deploy=false" >> $GITHUB_OUTPUT
+          echo "Model accuracy is too low. Skipping deployment."
+        fi
 
     - name: Clone Model Repository
+      if: steps.check-accuracy.outputs.deploy == 'true'
       run: |
-        git clone https://$HF_TOKEN@huggingface.co/danielle2003/diabetes-ml diabetes-ml
+        git clone https://$HF_TOKEN@huggingface.co/danielle2003/diabetes-ml
         cd diabetes-ml
-        git config user.email "danielledjofang2003@gmail.com"
-        git config user.name "dani-ange"
+        git config --global user.email "danielledjofang2003@gmail.com"
+        git config --global user.name "dani-ange"
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
 
     - name: Deploy to Hugging Face
+      if: steps.check-accuracy.outputs.deploy == 'true'
       run: |
         cd diabetes-ml
         cp ../diabetes_model.joblib .
         git add diabetes_model.joblib
-        git commit -m "Updated model"
-        git push
+        # Check if there are changes to commit
+        if ! git diff --cached --quiet; then
+          git commit -m "Updated model"
+          git push
+        else
+          echo "No changes to deploy."
+        fi
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
-
-
