@@ -41,7 +41,7 @@ jobs:
 
     - name: Clone Model Repository
       run: |
-        git clone https://huggingface.co/danielle2003/diabetes-ml
+        git clone https://$HF_TOKEN@huggingface.co/danielle2003/diabetes-ml
         cd diabetes-ml
         git config --global user.email "danielledjofang2003@gmail.com"
         git config --global user.name "dani-ange"
