@@ -32,28 +32,28 @@ jobs:
           echo "Model accuracy is too low. Skipping deployment."
           exit 1
         fi
+
     - name: Authenticate with Hugging Face
       run: |
-        git config --global credential.helper store
-        echo "https://user:${HF_TOKEN}@huggingface.co" > ~/.git-credentials
-       
+        huggingface-cli login --token $HF_TOKEN
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
 
     - name: Clone Model Repository
       run: |
-        git clone https://${HF_TOKEN}@huggingface.co/danielle2003/diabetes-ml
+        git clone https://huggingface.co/danielle2003/diabetes-ml
+        cd diabetes-ml
         git config --global user.email "danielledjofang2003@gmail.com"
         git config --global user.name "dani-ange"
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
+
     - name: Deploy to Hugging Face
-      env:
-       HF_TOKEN : ${{ secrets.HUGGINGFACE_API_TOKEN }}
       run: |
-        huggingface-cli login --token $HF_TOKEN
         cd diabetes-ml
         cp ../diabetes_model.joblib .
         git add diabetes_model.joblib
         git commit -m "Updated model"
         git push
+      env:
+        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
