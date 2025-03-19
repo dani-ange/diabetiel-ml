@@ -38,7 +38,7 @@ jobs:
         echo "https://user:${HF_TOKEN}@huggingface.co" > ~/.git-credentials
        
       env:
-        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
 
     - name: Clone Model Repository
       run: |
