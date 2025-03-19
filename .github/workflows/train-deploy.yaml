@@ -42,7 +42,7 @@ jobs:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
     - name: Clone Model Repository
-      run: git clone https://user@huggingface.co/dani-ange/diabetes-ml
+      run: git clone https://user@huggingface.co/danielle2003/diabetes-ml
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
     - name: Deploy to Hugging Face
