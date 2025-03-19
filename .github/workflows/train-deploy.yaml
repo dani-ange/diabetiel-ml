@@ -28,7 +28,7 @@ jobs:
         python -c "from huggingface_hub import login; login('${{ secrets.HUGGINGFACE_API_TOKEN }}')"
 
     - name: Download Model Repository
-      run: huggingface-cli download danielle2003/diabetes-ml --repo-type space --token $HF_TOKEN
+      run: huggingface-cli download danielle2003/diabetes-ml --repo-type space 
 
 
     - name: Deploy to Hugging Face
