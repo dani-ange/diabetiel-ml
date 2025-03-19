@@ -18,7 +18,9 @@ jobs:
         python-version: 3.8
 
     - name: Install dependencies
-      run: pip install -r requirements.txt
+      run: |
+        python -m pip install --upgrade pip
+        pip install --no-cache-dir -r requirements.txt
 
     - name: Train the model
       run: python train.py
@@ -26,25 +28,20 @@ jobs:
     - name: Check model accuracy
       id: check-accuracy
       run: |
-        ACCURACY=$(python -c "import json; print(json.load(open('metrics.json'))['accuracy'])")
-        echo "Model Accuracy: $ACCURACY"
-        if (( $(echo "$ACCURACY < 60" | bc -l) )); then
-          echo "Model accuracy is too low. Skipping deployment."
+        if [ ! -f metrics.json ]; then
+          echo "metrics.json not found. Exiting..."
           exit 1
         fi
-
-    - name: Authenticate with Hugging Face
-      run: |
-        huggingface-cli login --token $HF_TOKEN
-      env:
-        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
+        ACCURACY=$(python -c "import json; print(json.load(open('metrics.json'))['accuracy'])")
+        echo "Model Accuracy: $ACCURACY"
+        python -c "import sys; sys.exit(0 if float('$ACCURACY') >= 60 else 1)"
 
     - name: Clone Model Repository
       run: |
-        git clone https://$HF_TOKEN@huggingface.co/danielle2003/diabetes-ml
+        git clone https://$HF_TOKEN@huggingface.co/danielle2003/diabetes-ml diabetes-ml
         cd diabetes-ml
-        git config --global user.email "danielledjofang2003@gmail.com"
-        git config --global user.name "dani-ange"
+        git config user.email "danielledjofang2003@gmail.com"
+        git config user.name "dani-ange"
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
 
@@ -57,3 +54,5 @@ jobs:
         git push
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
+
+
