@@ -20,6 +20,9 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements.txt
 
+    - name: Install huggingface_hub
+      run: pip install huggingface_hub
+
     - name: Train the model
       run: python train.py
 
@@ -28,35 +31,32 @@ jobs:
       run: |
         ACCURACY=$(python -c "import json; print(json.load(open('metrics.json'))['accuracy'])")
         echo "Model Accuracy: $ACCURACY"
-        if (( $(echo "$ACCURACY >= 60" | bc -l) )); then
-          echo "deploy=true" >> $GITHUB_OUTPUT
-        else
-          echo "deploy=false" >> $GITHUB_OUTPUT
+        if (( $(echo "$ACCURACY < 60" | bc -l) )); then
           echo "Model accuracy is too low. Skipping deployment."
+          exit 1
         fi
 
-    - name: Clone Model Repository
-      if: steps.check-accuracy.outputs.deploy == 'true'
+    - name: Authenticate with Hugging Face
       run: |
-        git clone https://$HF_TOKEN@huggingface.co/danielle2003/diabetes-ml
-        cd diabetes-ml
-        git config --global user.email "danielledjofang2003@gmail.com"
-        git config --global user.name "dani-ange"
-      env:
-        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
+        python -c "from huggingface_hub import login; login('${{ secrets.HUGGINGFACE_API_TOKEN }}')"
 
-    - name: Deploy to Hugging Face
-      if: steps.check-accuracy.outputs.deploy == 'true'
+    - name: Clone Model Repository using huggingface_hub
       run: |
-        cd diabetes-ml
-        cp ../diabetes_model.joblib .
-        git add diabetes_model.joblib
-        # Check if there are changes to commit
-        if ! git diff --cached --quiet; then
-          git commit -m "Updated model"
-          git push
-        else
-          echo "No changes to deploy."
-        fi
-      env:
-        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
+        python -c "
+        from huggingface_hub import HfApi;
+        api = HfApi();
+        api.repo_download(repo_id='danielle2003/diabetes-ml', local_dir='diabetes-ml')"
+
+    - name: Deploy Model using huggingface_hub
+      run: |
+        python -c "
+        from huggingface_hub import HfApi;
+        import shutil;
+        api = HfApi();
+        shutil.copy('diabetes_model.joblib', 'diabetes-ml/diabetes_model.joblib');
+        api.upload_file(
+            path_or_fileobj='diabetes-ml/diabetes_model.joblib',
+            path_in_repo='diabetes_model.joblib',
+            repo_id='danielle2003/diabetes-ml',
+            token='${{ secrets.HUGGINGFACE_API_TOKEN }}'
+        )"
