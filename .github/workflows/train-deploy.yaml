@@ -28,14 +28,14 @@ jobs:
         huggingface-cli login --token "${{ secrets.HUGGINGFACE_API_TOKEN }}" --add-to-git-credential
 
     - name: Download Model Repository
-      run: huggingface-cli download danielle2003/diabeties-ml --repo-type space
+      run: huggingface-cli download danielle2003/diabeties-ml --repo-type space --local-dir diabetes-ml
 
     - name: Deploy to Hugging Face
       env:
        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
       run: |
         huggingface-cli login --token $HF_TOKEN
-        cd diabetes-ml
+        cd diabetes-ml || exit 1  # Exit if the directory does not exist
         cp ../diabetes_model.joblib .
         git add diabetes_model.joblib
         git commit -m "Updated model"
