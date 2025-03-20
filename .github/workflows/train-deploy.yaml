@@ -21,10 +21,14 @@ jobs:
 
     - name: Install dependencies
       run: pip install -r requirements.txt
+    - name: Upgrade Hugging Face Hub
+      run: pip install --upgrade huggingface_hub
 
     - name: Authenticate with Hugging Face
       run: |
         huggingface-cli login --token "${{ secrets.HUGGINGFACE_API_TOKEN }}" --add-to-git-credential
+    - name: Download Model Repository
+      run: huggingface-cli download danielle2003/diabeties-ml --repo-type space --local-dir diabetes-ml
 
     - name: Deploy to Hugging Face
       env:
