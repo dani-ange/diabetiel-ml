@@ -44,7 +44,10 @@ jobs:
         
         # Ensure Git LFS tracks the right files
         git lfs track "*.joblib"
-        
         git add .
-        git commit -m "Updated model"
-        git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml main
+        if ! git diff --cached --exit-code; then
+            git commit -m "Updated model"
+            git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml main
+        else
+            echo "No changes to commit."
+        fi
