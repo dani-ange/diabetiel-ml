@@ -38,4 +38,4 @@ jobs:
         git add .
         git commit -m "Updated model"
         git lfs migrate import --everything --include "*.joblib"
-        git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml
+        git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml main
