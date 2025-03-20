@@ -14,6 +14,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Ensures all branches are fetched
 
     - name: Set up Python
       uses: actions/setup-python@v3
@@ -30,17 +32,19 @@ jobs:
       run: |
         huggingface-cli login --token "${{ secrets.HUGGINGFACE_API_TOKEN }}" --add-to-git-credential
 
-    - name: Merge PR changes into main
+    - name: Merge PR changes into master
       run: |
-        git checkout "master"  # Switch to main branch
-        git pull origin master  # Ensure latest changes
-        git merge --no-ff origin/main -m "Merging PR changes from master"
-        git push origin master  # Push merged changes to main
+        git config --global user.email "danielledjofang2003@gmail.com"
+        git config --global user.name "dani-ange"
 
-        git checkout "master"  # Switch to master branch
-        git pull origin master  # Ensure latest master
-        git merge --no-ff origin/main -m "Merging latest changes from main"
-        git push origin master  # Push changes to master
+        git checkout master  # Switch to master branch
+        git pull origin master  # Ensure latest changes
+
+        # Merge PR changes from the pull request branch
+        git merge --no-ff ${{ github.head_ref }} -m "Merging PR changes from ${{ github.head_ref }}"
+
+        git push origin master  # Push merged changes to master
+
     - name: Deploy to Hugging Face
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
@@ -49,10 +53,10 @@ jobs:
         git config --global user.email "danielledjofang2003@gmail.com"
         git config --global user.name "dani-ange"
 
-        git add .
-        if ! git diff --cached --exit-code; then
-            git commit -m "Updated model after merging PR"
-            git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml main
-        else
+        if git diff --quiet; then
             echo "No changes to commit."
+        else
+            git add .
+            git commit -m "Updated model after merging PR"
+            git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml master
         fi
