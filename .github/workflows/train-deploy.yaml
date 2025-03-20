@@ -66,6 +66,5 @@ jobs:
         git config pull.rebase true  
 
         # Ensure local repository is up-to-date before pushing
-        git pull --rebase https://huggingface.co/spaces/danielle2003/diabeties main || git pull --rebase --allow-unrelated-histories https://huggingface.co/spaces/danielle2003/diabeties main
-        git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties main
+        git push --force https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties main
         
