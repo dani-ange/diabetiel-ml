@@ -35,14 +35,12 @@ jobs:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
       run: huggingface-cli login --token $HF_TOKEN --add-to-git-credential
 
-    - name: Download Model Repository
-      run: huggingface-cli download danielle2003/diabeties-ml --repo-type space --local-dir diabetes-ml
     - name: Push `main` changes to `master`
       run: |
-        git checkout master  # Switch to master branch
-        git pull origin master  # Ensure latest master
+        git checkout master 
+        git pull origin master  
         git merge --no-ff origin/main -m "Merging latest changes from main"
-        git push origin master  # Push changes to master
+        git push origin master  
     - name: Deploy to Hugging Face
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
