@@ -3,7 +3,7 @@ import joblib
 import pandas as pd
 
 # Load trained model
-model = joblib.load("diabetes_model.joblib")
+model = joblib.load("diabetes-ml/diabetes_model.joblib")
 
 # Streamlit UI
 st.title("Diabetes Prediction App")
