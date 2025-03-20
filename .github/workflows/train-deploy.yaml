@@ -62,6 +62,6 @@ jobs:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
       run: |
         huggingface-cli login --token $HF_TOKEN
-        git pull
+        git pull --rebase https://huggingface.co/spaces/danielle2003/diabeties-ml main
         git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml main
         
