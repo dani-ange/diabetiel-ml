@@ -39,8 +39,6 @@ jobs:
         huggingface-cli login --token $HF_TOKEN
         git config --global user.email "danielledjofang2003@gmail.com"
         git config --global user.name "dani-ange"
-        cd diabetes-ml || exit 1  # Exit if the directory does not exist
-        cp ../diabetes_model.joblib .
-        git add diabetes_model.joblib
+        git add .
         git commit -m "Updated model"
         git push
