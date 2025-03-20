@@ -33,10 +33,14 @@ jobs:
     - name: Merge PR changes into main
       run: |
         git checkout "master"  # Switch to main branch
-        git pull origin "master"  # Ensure latest changes
+        git pull origin master  # Ensure latest changes
         git merge --no-ff origin/main -m "Merging PR changes from master"
         git push origin master  # Push merged changes to main
 
+        git checkout "master"  # Switch to master branch
+        git pull origin master  # Ensure latest master
+        git merge --no-ff origin/main -m "Merging latest changes from main"
+        git push origin master  # Push changes to master
     - name: Deploy to Hugging Face
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
