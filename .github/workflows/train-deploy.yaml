@@ -49,13 +49,13 @@ jobs:
         git checkout main
         git pull origin main  # Ensure main is up to date
 
-        git checkout master
-        if git merge --no-ff main -m "Merging changes from main into master"; then
-            echo "Merge successful."
-            git push origin master
-        else
-            echo "No changes to merge or merge conflict detected."
-        fi
+        #git checkout master
+        #if git merge --no-ff main -m "Merging changes from main into master"; then
+            #echo "Merge successful."
+            #git push origin master
+        #else
+            #echo "No changes to merge or merge conflict detected."
+        #fi
 
     - name: Deploy to Hugging Face
       env:
