@@ -1,9 +1,10 @@
 name: Train and Deploy Model
+
 on:
   pull_request:
     branches:
-      - master
-  workflow_dispatch:
+      - master  # Runs when a PR is made to master
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   train-evaluate-deploy:
@@ -13,15 +14,33 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v3
       with:
-        python-version: 3.8
+        fetch-depth: 0  # Fetch all branches
+
+    - name: Set up Git
+      run: |
+        git config --global user.email "danielledjofang2003@gmail.com"
+        git config --global user.name "dani-ange"
+
+    - name: Ensure master branch is up-to-date
+      run: |
+        git checkout master  # Ensure we're on master
+        git pull origin master  # Get latest changes
+
+    - name: Merge PR changes into master
+      run: |
+        # Ensure the PR branch is properly merged
+        if git branch -r | grep "origin/${{ github.head_ref }}"; then
+          git merge --no-ff origin/${{ github.head_ref }} -m "Merging PR changes from ${{ github.head_ref }}"
+          git push origin master  # Push merged changes
+        else
+          echo "Error: Branch ${{ github.head_ref }} does not exist in remote."
+          exit 1
+        fi
 
     - name: Install dependencies
       run: pip install -r requirements.txt
-
+    
     - name: Upgrade Hugging Face Hub
       run: pip install --upgrade huggingface_hub
 
@@ -29,23 +48,16 @@ jobs:
       run: |
         huggingface-cli login --token "${{ secrets.HUGGINGFACE_API_TOKEN }}" --add-to-git-credential
 
-    - name: Download Model Repository
-      run: huggingface-cli download danielle2003/diabeties-ml --repo-type space --local-dir diabetes-ml
-    - name: Push `main` changes to `master`
-      run: |
-        git checkout "master"  # Switch to master branch
-        git pull origin master  # Ensure latest master
-        git merge --no-ff origin/main -m "Merging latest changes from main"
-        git push origin master  # Push changes to master
     - name: Deploy to Hugging Face
       env:
-       HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
+        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
       run: |
         huggingface-cli login --token $HF_TOKEN
-        git config --global user.email "danielledjofang2003@gmail.com"
-        git config --global user.name "dani-ange"
-        cd diabetes-ml || exit 1  # Exit if the directory does not exist
-        cp ../diabetes_model.joblib .
-        git add diabetes_model.joblib
-        git commit -m "Updated model"
-        git push
+
+        if git diff --quiet; then
+            echo "No changes to commit."
+        else
+            git add .
+            git commit -m "Updated model after merging PR"
+            git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml master
+        fi
