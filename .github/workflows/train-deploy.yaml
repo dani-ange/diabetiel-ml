@@ -21,21 +21,30 @@ jobs:
 
     - name: Install dependencies
       run: pip install -r requirements.txt
+      
     - name: Upgrade Hugging Face Hub
       run: pip install --upgrade huggingface_hub
 
-    - name: Authenticate with Hugging Face
+    - name: Install Git LFS
       run: |
-        huggingface-cli login --token "${{ secrets.HUGGINGFACE_API_TOKEN }}" --add-to-git-credential
-   
+        sudo apt-get install git-lfs
+        git lfs install
+
+    - name: Authenticate with Hugging Face
+      env:
+        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
+      run: huggingface-cli login --token $HF_TOKEN --add-to-git-credential
+
     - name: Deploy to Hugging Face
       env:
-       HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
+        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
       run: |
-        huggingface-cli login --token $HF_TOKEN
         git config --global user.email "danielledjofang2003@gmail.com"
         git config --global user.name "dani-ange"
+        
+        # Ensure Git LFS tracks the right files
+        git lfs track "*.joblib"
+        
         git add .
         git commit -m "Updated model"
-        git lfs migrate import --everything --include "*.joblib"
         git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml main
