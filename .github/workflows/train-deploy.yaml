@@ -15,7 +15,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0  # Fetch all branches and commits
+        fetch-depth: 0  # Fetch full history and all branches
+
+    - name: Set up Git identity
+      run: |
+        git config --global user.email "danielledjofang2003@gmail.com"
+        git config --global user.name "dani-ange"
 
     - name: Set up Python
       uses: actions/setup-python@v3
@@ -32,23 +37,31 @@ jobs:
       run: |
         huggingface-cli login --token "${{ secrets.HUGGINGFACE_API_TOKEN }}" --add-to-git-credential
 
-    - name: Merge PR changes into master
+    - name: Fetch all branches
+      run: |
+        git fetch --all  # Ensure we have all branch updates
+
+    - name: Merge main into master
       run: |
         git checkout master  # Switch to master branch
-        git pull origin master  # Ensure latest master
+        git pull origin master  # Get the latest master
+        
+        git checkout main
+        git pull origin main  # Ensure main is up to date
 
-        # Merge main into master correctly
-        git merge origin/main -m "Merging changes from main into master" || echo "No changes to merge"
-
-        git push origin master  # Push merged changes to master
+        git checkout master
+        if git merge --no-ff main -m "Merging changes from main into master"; then
+            echo "Merge successful."
+            git push origin master
+        else
+            echo "No changes to merge or merge conflict detected."
+        fi
 
     - name: Deploy to Hugging Face
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
       run: |
         huggingface-cli login --token $HF_TOKEN
-        git config --global user.email "danielledjofang2003@gmail.com"
-        git config --global user.name "dani-ange"
 
         git add .
         if ! git diff --cached --exit-code; then
