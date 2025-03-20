@@ -11,8 +11,7 @@ st.write("Enter patient data to predict diabetes")
 
 # Input fields
 st.header("welcome to the appa")
-=======
-
+st.button("welcom")
 pregnancies = st.number_input("Pregnancies", min_value=0, max_value=20)
 glucose = st.number_input("Glucose Level", min_value=0, max_value=200)
 blood_pressure = st.number_input("Blood Pressure", min_value=0, max_value=200)
