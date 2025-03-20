@@ -32,10 +32,10 @@ jobs:
 
     - name: Merge PR changes into main
       run: |
-        git checkout main  # Switch to main branch
-        git pull origin main  # Ensure latest changes
-        git merge --no-ff origin/master -m "Merging PR changes from master"
-        git push origin main  # Push merged changes to main
+        git checkout "master"  # Switch to main branch
+        git pull origin "master"  # Ensure latest changes
+        git merge --no-ff origin/main -m "Merging PR changes from master"
+        git push origin master  # Push merged changes to main
 
     - name: Deploy to Hugging Face
       env:
