@@ -27,9 +27,7 @@ jobs:
     - name: Authenticate with Hugging Face
       run: |
         huggingface-cli login --token "${{ secrets.HUGGINGFACE_API_TOKEN }}" --add-to-git-credential
-    - name: Download Model Repository
-      run: huggingface-cli download danielle2003/diabeties-ml --repo-type space --local-dir diabetes-ml
-
+   
     - name: Deploy to Hugging Face
       env:
        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
@@ -38,6 +36,6 @@ jobs:
         git config --global user.email "danielledjofang2003@gmail.com"
         git config --global user.name "dani-ange"
         git add .
-        git commit -m "Updated model
+        git commit -m "Updated model"
         git lfs migrate import --everything --include "*.joblib"
         git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml
