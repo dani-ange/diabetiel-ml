@@ -62,11 +62,5 @@ jobs:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
       run: |
         huggingface-cli login --token $HF_TOKEN
-
-        git add .
-        if ! git diff --cached --exit-code; then
-            git commit -m "Updated model after merging PR"
-            git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml main
-        else
-            echo "No changes to commit."
-        fi
+        git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml main
+        
