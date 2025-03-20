@@ -14,6 +14,8 @@ st.header("welcome to the appa")
 st.button("welcom")
 st.button("aged")
 st.button("ageddd")
+st.button("agessssss")
+
 
 
 pregnancies = st.number_input("Pregnancies", min_value=0, max_value=20)
