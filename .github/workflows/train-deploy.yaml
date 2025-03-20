@@ -15,28 +15,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0  # Fetch all branches
+        fetch-depth: 0  # Fetch full history and all branches
 
-    - name: Set up Git
+    - name: Set up Git identity
       run: |
         git config --global user.email "danielledjofang2003@gmail.com"
         git config --global user.name "dani-ange"
 
-    - name: Ensure master branch is up-to-date
-      run: |
-        git checkout master  # Ensure we're on master
-        git pull origin master  # Get latest changes
-
-    - name: Merge PR changes into master
-      run: |
-        # Ensure the PR branch is properly merged
-        if git branch -r | grep "origin/${{ github.head_ref }}"; then
-          git merge --no-ff origin/${{ github.head_ref }} -m "Merging PR changes from ${{ github.head_ref }}"
-          git push origin master  # Push merged changes
-        else
-          echo "Error: Branch ${{ github.head_ref }} does not exist in remote."
-          exit 1
-        fi
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.8
 
     - name: Install dependencies
       run: pip install -r requirements.txt
@@ -48,16 +37,36 @@ jobs:
       run: |
         huggingface-cli login --token "${{ secrets.HUGGINGFACE_API_TOKEN }}" --add-to-git-credential
 
+    - name: Fetch all branches
+      run: |
+        git fetch --all  # Ensure we have all branch updates
+
+    - name: Merge main into master
+      run: |
+        git checkout master  # Switch to master branch
+        git pull origin master  # Get the latest master
+        
+        git checkout main
+        git pull origin main  # Ensure main is up to date
+
+        git checkout master
+        if git merge --no-ff main -m "Merging changes from main into master"; then
+            echo "Merge successful."
+            git push origin master
+        else
+            echo "No changes to merge or merge conflict detected."
+        fi
+
     - name: Deploy to Hugging Face
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
       run: |
         huggingface-cli login --token $HF_TOKEN
 
-        if git diff --quiet; then
-            echo "No changes to commit."
-        else
-            git add .
+        git add .
+        if ! git diff --cached --exit-code; then
             git commit -m "Updated model after merging PR"
-            git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml master
+            git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml main
+        else
+            echo "No changes to commit."
         fi
