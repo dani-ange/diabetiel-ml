@@ -1,9 +1,10 @@
 name: Train and Deploy Model
+
 on:
   pull_request:
     branches:
-      - master
-  workflow_dispatch:
+      - master  # Runs when a PR is made to master
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   train-evaluate-deploy:
@@ -21,38 +22,32 @@ jobs:
 
     - name: Install dependencies
       run: pip install -r requirements.txt
-      
+    
     - name: Upgrade Hugging Face Hub
       run: pip install --upgrade huggingface_hub
 
-    - name: Install Git LFS
-      run: |
-        sudo apt-get install git-lfs
-        git lfs install
-
     - name: Authenticate with Hugging Face
-      env:
-        HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
-      run: huggingface-cli login --token $HF_TOKEN --add-to-git-credential
-
-    - name: Push `main` changes to `master`
       run: |
-        git checkout master 
-        git pull origin master  
-        git merge --no-ff origin/main -m "Merging latest changes from main"
-        git push origin master  
+        huggingface-cli login --token "${{ secrets.HUGGINGFACE_API_TOKEN }}" --add-to-git-credential
+
+    - name: Merge PR changes into main
+      run: |
+        git checkout main  # Switch to main branch
+        git pull origin main  # Ensure latest changes
+        git merge --no-ff origin/master -m "Merging PR changes from master"
+        git push origin main  # Push merged changes to main
+
     - name: Deploy to Hugging Face
       env:
         HF_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
       run: |
+        huggingface-cli login --token $HF_TOKEN
         git config --global user.email "danielledjofang2003@gmail.com"
         git config --global user.name "dani-ange"
-        
-        # Ensure Git LFS tracks the right files
-        git lfs track "*.joblib"
+
         git add .
         if ! git diff --cached --exit-code; then
-            git commit -m "Updated model"
+            git commit -m "Updated model after merging PR"
             git push https://danielle2003:$HF_TOKEN@huggingface.co/spaces/danielle2003/diabeties-ml main
         else
             echo "No changes to commit."
